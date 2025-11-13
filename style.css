@@ -1,0 +1,11 @@
+canvas{
+    background-color: black;
+    border: 5px solid white;
+    justify-self: center;
+    align-self: center;
+}
+
+body{
+    background-color: #1a170f;
+    display: grid;
+}
