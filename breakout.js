@@ -9,6 +9,7 @@ const STARTBALLSPEED = 10
 const PADDLESPEED = 10
 const BALLACCELERATION = 0.15
 
+// Used to control ball angle by positioning the paddle
 function getAngleBetweenTwoPoints(myX, myY, otherX, otherY) {
     let dx = otherX - myX;
     let dy = otherY - myY;
@@ -17,6 +18,7 @@ function getAngleBetweenTwoPoints(myX, myY, otherX, otherY) {
     return angle
 }
 
+// Subtracts 5 from each number in the colour's hex code
 function getDarkerColor(color) {
     let splits = color.slice(1).split("");
     let processed = splits.map(digit => {
@@ -27,7 +29,6 @@ function getDarkerColor(color) {
     return "#" + processed.join("");
 }
 
-// Define Brick game object
 class Brick {
     constructor(xPos, yPos, color) {
         this.xPos = xPos;
@@ -41,8 +42,8 @@ class Brick {
     update() {
         // Do nothing, I guess
     }
-    // Draw brick 
     draw() {
+        // Draws two squares, one darker as a "3D Shadow"
         ctx.fillStyle = getDarkerColor(this.color);
         ctx.fillRect(this.xPos, this.yPos, this.width, this.height);
 
@@ -59,7 +60,6 @@ class Paddle {
         this.height = 30
     }
 
-    // If hit ball, switch ball direction
     update() {
         if (controls.right && (this.xPos + this.width) < WIDTH) {
             this.xPos += PADDLESPEED;
@@ -122,6 +122,7 @@ class Ball {
     }
 
     checkCollision(other) {
+        // Cannot collide with self
         if (other instanceof Ball) {            
             return
         }
@@ -133,7 +134,7 @@ class Ball {
                 this.speed += BALLACCELERATION
                 new Audio("Boom0.wav").play();
 
-                // Bounce by simply mirroring the ball
+                // Bounce by simply mirroring the ball, same as with hitting a wall
                 let overlapLeft = this.xPos + this.width - other.xPos;
                 let overlapRight = other.xPos + other.width - this.xPos;
                 let overlapTop = this.yPos + this.height - other.yPos;
@@ -171,6 +172,7 @@ class Ball {
     }
 }
 
+// This is used as a layer between keydown events and game movement to eg. map both A and left arrow to the same "left" control.
 var controls = {
     left: false,
     right: false,
@@ -256,6 +258,7 @@ interval = setInterval(() => {
         ctx.textBaseline = "center" // This may be wrong, but 10px is absolutely not enough space.
         ctx.fillText("Press SPACE to begin", WIDTH/2, HEIGHT/2 + 30)
 
+        // Start game if pressed space
         if (controls.space == true) {
             gameState = "play";
             createGameobjects()
@@ -274,15 +277,15 @@ interval = setInterval(() => {
         ctx.textAlign = "right"
         ctx.fillText("High score: " + maxScore.toString(), WIDTH-100, 20)
 
-        // Loop through game objects. Each objects is updated, then drawn as defined in the rules of its own class.
+        // Loop through game objects. Each object is updated, then drawn as defined in the rules of its own class.
         for (let gameObject of gameObjects) {
             gameObject.update()
             gameObject.draw()
             myBall.checkCollision(gameObject)
         }
-        // Delete objects if they are marked for deletion
+        // Delete objects if they are marked for deletion because JS deletes only when the last reference is removed.
         gameObjects = gameObjects.filter(object => !object.markForDelete)
-        // End game if all bricks broken
+        // End game (and play win sound) if all bricks are broken
         if (currentScore >= 50) {
             gameState = "over"
             winClip.play();
@@ -301,4 +304,5 @@ interval = setInterval(() => {
             localStorage.setItem("maxScore", currentScore.toString())
         }
     }
+
 }, 20)
